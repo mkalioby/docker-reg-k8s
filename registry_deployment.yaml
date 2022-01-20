@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: registry
+  name: registry
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: registry
+    spec:
+      containers:
+      - env:
+        - name: REGISTRY_AUTH
+          value: htpasswd
+        - name: REGISTRY_AUTH_HTPASSWD_REALM
+          value: Registry
+        - name: REGISTRY_AUTH_HTPASSWD_PATH
+          value: /auth/passwd
+        image: registry:2
+        name: registry
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /data/
+          name: registry-data
+        - mountPath: /auth/passwd
+          name: passwd
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /data/registry/
+          type: Directory
+        name: registry-data
+      - hostPath:
+          path: /data/passwd
+          type: File
+        name: passwd
